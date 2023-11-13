@@ -19,6 +19,7 @@ defmodule TodoExWeb.Router do
 
     live "/project/new", TaskLive.Index, :new_project
     live "/project/:id/edit", TaskLive.Index, :edit_project
+    live "/project/:id/task/new", TaskLive.Index, :new_task
 
     live "/", TaskLive.Index, :index
   end

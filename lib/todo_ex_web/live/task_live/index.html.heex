@@ -35,17 +35,35 @@
 
 <.modal
   :if={@live_action in [:new_project, :edit_project]}
-  id="task-modal"
+  id="project-modal"
   show
   on_cancel={JS.patch(~p"/")}
 >
   <.live_component
-    module={TodoExWeb.TaskLive.FormComponent}
+    module={TodoExWeb.TaskLive.ProjectFormComponent}
     id={@project.id || :new}
     users={@users}
     title={@page_title}
     action={@live_action}
     project={@project}
+    patch={~p"/"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:new_task, :edit_task]}
+  id="task-modal"
+  show
+  on_cancel={JS.patch(~p"/")}
+>
+  <.live_component
+    module={TodoExWeb.TaskLive.TaskFormComponent}
+    id={@project.id || :new}
+    users={@users}
+    title={@page_title}
+    action={@live_action}
+    project={@project}
+    task={@task}
     patch={~p"/"}
   />
 </.modal>

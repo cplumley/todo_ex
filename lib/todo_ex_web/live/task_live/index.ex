@@ -2,7 +2,7 @@ defmodule TodoExWeb.TaskLive.Index do
   use TodoExWeb, :live_view
 
   alias TodoEx.Accounts
-  alias TodoEx.TaskManager.Project
+  alias TodoEx.TaskManager.{Project, Task}
   alias TodoExWeb.Atoms
   alias TodoEx.Repo
 
@@ -38,9 +38,14 @@ defmodule TodoExWeb.TaskLive.Index do
     |> assign(:project, %Project{})
   end
 
-  defp apply_action(socket, :index, _params) do
-    IO.inspect(socket.assigns.streams, label: "Index")
+  defp apply_action(socket, :new_task, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "New Task")
+    |> assign(:project, TaskManager.get_project!(id))
+    |> assign(:task, %Task{})
+  end
 
+  defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Projects")
     |> assign(:project, nil)

@@ -1,4 +1,4 @@
-defmodule TodoExWeb.TaskLive.FormComponent do
+defmodule TodoExWeb.TaskLive.TaskFormComponent do
   use TodoExWeb, :live_component
 
   alias TodoEx.TaskManager
@@ -19,11 +19,11 @@ defmodule TodoExWeb.TaskLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Project Name" />
-        <.input field={@form[:user_id]} type="select" label="User" options={@users} />
+        <.input field={@form[:title]} type="text" label="Title" />
+        <.input field={@form[:description]} type="text" label="Description" />
         <:actions>
           <Atoms.button variant="primary" class="w-full" phx-disable-with="Saving...">
-            Create
+            <%= if @action == :new_task, do: "Create", else: "Update" %>
           </Atoms.button>
         </:actions>
       </.simple_form>
@@ -32,8 +32,8 @@ defmodule TodoExWeb.TaskLive.FormComponent do
   end
 
   @impl true
-  def update(%{project: project} = assigns, socket) do
-    changeset = TaskManager.change_project(project)
+  def update(%{task: task} = assigns, socket) do
+    changeset = TaskManager.change_task(task)
 
     {:ok,
      socket
@@ -42,27 +42,28 @@ defmodule TodoExWeb.TaskLive.FormComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"project" => project_params}, socket) do
+  def handle_event("validate", %{"task" => task_params}, socket) do
     changeset =
-      socket.assigns.project
-      |> TaskManager.change_project(project_params)
+      socket.assigns.task
+      |> TaskManager.change_task(task_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("save", %{"project" => project_params}, socket) do
-    save_project(socket, socket.assigns.action, project_params)
+  def handle_event("save", %{"task" => task_params}, socket) do
+    task_params = Map.merge(task_params, %{"project_id" => socket.assigns.project.id})
+    save_task(socket, socket.assigns.action, task_params)
   end
 
-  defp save_project(socket, :edit_project, project_params) do
-    case TaskManager.update_project(socket.assigns.project, project_params) do
-      {:ok, project} ->
-        notify_parent({:saved, project})
+  defp save_task(socket, :edit_task, task_params) do
+    case TaskManager.update_task(socket.assigns.task, task_params) do
+      {:ok, task} ->
+        notify_parent({:saved, task})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Project updated successfully")
+         |> put_flash(:info, "Task updated successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -70,14 +71,14 @@ defmodule TodoExWeb.TaskLive.FormComponent do
     end
   end
 
-  defp save_project(socket, :new_project, project_params) do
-    case TaskManager.create_project(project_params) do
-      {:ok, project} ->
-        notify_parent({:saved, project})
+  defp save_task(socket, :new_task, task_params) do
+    case TaskManager.create_task(task_params) do
+      {:ok, task} ->
+        notify_parent({:saved, task})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Project created successfully")
+         |> put_flash(:info, "Task created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

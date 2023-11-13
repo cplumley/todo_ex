@@ -15,7 +15,7 @@ defmodule TodoEx.TaskManager.Task do
   def changeset(task, attrs) do
     task
     |> cast(attrs, [:title, :description, :completed, :project_id])
-    |> validate_required([:title, :description, :completed])
+    |> validate_required([:title, :completed])
     |> assoc_constraint(:project)
   end
 end
