@@ -118,7 +118,9 @@ defmodule TodoEx.TaskManager do
 
   """
   def list_tasks do
-    Repo.all(order_by: [asc: :title])
+    Task
+    |> order_by(desc: :inserted_at)
+    |> Repo.all()
   end
 
   @doc """

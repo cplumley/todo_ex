@@ -7,21 +7,22 @@ defmodule TodoEx.TaskManagerTest do
     alias TodoEx.TaskManager.Project
 
     import TodoEx.TaskManagerFixtures
+    import TodoEx.AccountsFixtures
 
     @invalid_attrs %{name: nil}
 
     test "list_projects/0 returns all projects" do
       project = project_fixture()
-      assert TaskManager.list_projects() == [project]
+      assert TaskManager.list_projects() == [project |> Repo.preload([:user, :tasks])]
     end
 
     test "get_project!/1 returns the project with given id" do
       project = project_fixture()
-      assert TaskManager.get_project!(project.id) == project
+      assert TaskManager.get_project!(project.id) == project |> Repo.preload(:user)
     end
 
     test "create_project/1 with valid data creates a project" do
-      valid_attrs = %{name: "some name"}
+      valid_attrs = %{name: "some name", user_id: user_fixture().id}
 
       assert {:ok, %Project{} = project} = TaskManager.create_project(valid_attrs)
       assert project.name == "some name"
@@ -42,7 +43,7 @@ defmodule TodoEx.TaskManagerTest do
     test "update_project/2 with invalid data returns error changeset" do
       project = project_fixture()
       assert {:error, %Ecto.Changeset{}} = TaskManager.update_project(project, @invalid_attrs)
-      assert project == TaskManager.get_project!(project.id)
+      assert project |> Repo.preload(:user) == TaskManager.get_project!(project.id)
     end
 
     test "delete_project/1 deletes the project" do
@@ -75,7 +76,12 @@ defmodule TodoEx.TaskManagerTest do
     end
 
     test "create_task/1 with valid data creates a task" do
-      valid_attrs = %{completed: true, description: "some description", title: "some title"}
+      valid_attrs = %{
+        project_id: project_fixture().id,
+        completed: true,
+        description: "some description",
+        title: "some title"
+      }
 
       assert {:ok, %Task{} = task} = TaskManager.create_task(valid_attrs)
       assert task.completed == true
@@ -89,7 +95,12 @@ defmodule TodoEx.TaskManagerTest do
 
     test "update_task/2 with valid data updates the task" do
       task = task_fixture()
-      update_attrs = %{completed: false, description: "some updated description", title: "some updated title"}
+
+      update_attrs = %{
+        completed: false,
+        description: "some updated description",
+        title: "some updated title"
+      }
 
       assert {:ok, %Task{} = task} = TaskManager.update_task(task, update_attrs)
       assert task.completed == false
@@ -112,6 +123,11 @@ defmodule TodoEx.TaskManagerTest do
     test "change_task/1 returns a task changeset" do
       task = task_fixture()
       assert %Ecto.Changeset{} = TaskManager.change_task(task)
+    end
+
+    test "toggle_completed/1 updates task completion" do
+      task = task_fixture(completed: true)
+      assert {:ok, %{completed: false}} = TaskManager.toggle_completed(task)
     end
   end
 end
