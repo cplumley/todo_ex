@@ -10,6 +10,10 @@ defmodule TodoExWeb.TaskLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(TodoEx.PubSub, "tasks")
+    end
+
     socket =
       socket
       |> assign(users: Accounts.list_users() |> Enum.map(&{&1.name, &1.id}))
@@ -29,8 +33,6 @@ defmodule TodoExWeb.TaskLive.Index do
   end
 
   defp apply_action(socket, :new_project, _params) do
-    IO.inspect(socket.assigns.streams, label: "New Project")
-
     socket
     |> assign(:page_title, "New Project")
     |> assign(:project, %Project{})
@@ -45,8 +47,19 @@ defmodule TodoExWeb.TaskLive.Index do
   end
 
   @impl true
-  def handle_info({TodoExWeb.TaskLive.FormComponent, {:saved, project}}, socket) do
-    {:noreply, stream_insert(socket, :projects, project |> Repo.preload(:user))}
+  def handle_info({TodoExWeb.TaskLive.ProjectFormComponent, {:saved, project}}, socket) do
+    project = project |> Repo.preload([:user, :tasks])
+    {:noreply, stream_insert(socket, :projects, project)}
+  end
+
+  def handle_info({TodoExWeb.TaskLive.TaskFormComponent, {:saved, task}}, socket) do
+    send_update(TodoExWeb.TaskLive.TaskComponent, id: task.project_id, task: task)
+    {:noreply, socket}
+  end
+
+  def handle_info(%{task: task}, socket) do
+    send_update(TodoExWeb.TaskLive.TaskComponent, id: task.project_id, task: task)
+    {:noreply, socket}
   end
 
   @impl true

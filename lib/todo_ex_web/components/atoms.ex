@@ -10,6 +10,7 @@ defmodule TodoExWeb.Atoms do
   """
 
   use Phoenix.Component
+  import TodoExWeb.CoreComponents
 
   @doc """
   Renders a circular avatar with initials for user.
@@ -113,6 +114,28 @@ defmodule TodoExWeb.Atoms do
     >
       <%= render_slot(@inner_block) %>
     </div>
+    """
+  end
+
+  @doc """
+  Renders a checkbox for task completion. There are two states to
+  this component: checked and unchecked
+
+  ## Example
+      <.todo_checkbox checked={task.completed} />
+  """
+
+  attr :checked, :boolean
+
+  def todo_checkbox(assigns) do
+    ~H"""
+    <.icon
+      name="hero-check-circle"
+      class={[
+        "w-5 h-5",
+        if(@checked, do: "bg-green-500", else: "bg-gray dark:bg-white")
+      ]}
+    />
     """
   end
 end

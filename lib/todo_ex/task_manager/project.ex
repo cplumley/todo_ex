@@ -5,7 +5,8 @@ defmodule TodoEx.TaskManager.Project do
   schema "projects" do
     field :name, :string
     belongs_to :user, TodoEx.Accounts.User
-    has_many :tasks, TodoEx.TaskManager.Task
+
+    has_many :tasks, TodoEx.TaskManager.Task, preload_order: [asc: :inserted_at]
 
     timestamps()
   end

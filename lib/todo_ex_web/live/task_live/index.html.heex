@@ -7,25 +7,29 @@
   </:actions>
 </.header>
 <hr class="my-8" />
-<div class="grid grid-cols-2 gap-8">
+<div id="projects-grid" class="grid grid-cols-2 gap-8" phx-update="stream">
   <Atoms.card :for={{id, project} <- @streams.projects} id={id}>
     <div class="flex items-center gap-4">
       <Atoms.avatar initials={project.user.name} />
       <h2 class="text-lg font-semibold flex-grow"><%= project.name %></h2>
       <div class="flex">
+        <Atoms.button variant="icon" phx-click={JS.patch(~p"/project/#{project}/task/new")}>
+          <.icon name="hero-plus" class="h-5 w-5 bg-gray-700 dark:bg-white" />
+        </Atoms.button>
         <Atoms.button variant="icon" phx-click={JS.patch(~p"/project/#{project}/edit")}>
-          <.icon name="hero-pencil-square" class="h-5 w-5 bg-white" />
+          <.icon name="hero-pencil-square" class="h-5 w-5 bg-gray-700 dark:bg-white" />
         </Atoms.button>
         <Atoms.button
           variant="icon"
           phx-click={JS.push("delete", value: %{id: project.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
-          <.icon name="hero-ellipsis-vertical" class="h-5 w-5 bg-white" />
+          <.icon name="hero-trash" class="h-5 w-5 bg-gray-700 dark:bg-white" />
         </Atoms.button>
       </div>
     </div>
     <hr class="my-2" />
+    <.live_component module={TodoExWeb.TaskLive.TaskComponent} id={project.id} project={project} />
   </Atoms.card>
 </div>
 

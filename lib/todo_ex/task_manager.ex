@@ -5,6 +5,7 @@ defmodule TodoEx.TaskManager do
 
   import Ecto.Query, warn: false
   alias TodoEx.Repo
+  import Phoenix.PubSub
 
   alias TodoEx.TaskManager.Project
 
@@ -18,8 +19,10 @@ defmodule TodoEx.TaskManager do
 
   """
   def list_projects do
-    Repo.all(Project)
-    |> Repo.preload(:user)
+    Project
+    |> order_by(asc: :inserted_at)
+    |> Repo.all()
+    |> Repo.preload([:user, :tasks])
   end
 
   @doc """
@@ -115,7 +118,7 @@ defmodule TodoEx.TaskManager do
 
   """
   def list_tasks do
-    Repo.all(Task)
+    Repo.all(order_by: [asc: :title])
   end
 
   @doc """
@@ -168,6 +171,29 @@ defmodule TodoEx.TaskManager do
     task
     |> Task.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Updates the completion status of a task
+
+  ## Examples
+
+      iex> toggle_completed(task)
+      {:ok, %Task{}}
+
+      iex> toggle_completed(bad_task)
+      {:error, %Ecto.Changeset{}}
+  """
+
+  def toggle_completed(%Task{} = task) do
+    {:ok, new_task} =
+      task
+      |> Task.changeset(%{completed: !task.completed})
+      |> Repo.update()
+
+    broadcast(TodoEx.PubSub, "tasks", %{task: new_task})
+
+    {:ok, new_task}
   end
 
   @doc """
