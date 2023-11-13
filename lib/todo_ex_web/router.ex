@@ -17,7 +17,10 @@ defmodule TodoExWeb.Router do
   scope "/", TodoExWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/project/new", TaskLive.Index, :new_project
+    live "/project/:id/edit", TaskLive.Index, :edit_project
+
+    live "/", TaskLive.Index, :index
   end
 
   # Other scopes may use custom stacks.

@@ -1,0 +1,47 @@
+<.header>
+  Projects
+  <:actions>
+    <Atoms.button variant="outline" phx-click={JS.navigate(~p"/project/new")}>
+      + Add Project
+    </Atoms.button>
+  </:actions>
+</.header>
+<hr class="my-8" />
+<div class="grid grid-cols-2 gap-8">
+  <Atoms.card :for={{id, project} <- @streams.projects} id={id}>
+    <div class="flex items-center gap-4">
+      <Atoms.avatar initials={project.user.name} />
+      <h2 class="text-lg font-semibold flex-grow"><%= project.name %></h2>
+      <div class="flex">
+        <Atoms.button variant="icon" phx-click={JS.patch(~p"/project/#{project}/edit")}>
+          <.icon name="hero-pencil-square" class="h-5 w-5 bg-white" />
+        </Atoms.button>
+        <Atoms.button
+          variant="icon"
+          phx-click={JS.push("delete", value: %{id: project.id}) |> hide("##{id}")}
+          data-confirm="Are you sure?"
+        >
+          <.icon name="hero-ellipsis-vertical" class="h-5 w-5 bg-white" />
+        </Atoms.button>
+      </div>
+    </div>
+    <hr class="my-2" />
+  </Atoms.card>
+</div>
+
+<.modal
+  :if={@live_action in [:new_project, :edit_project]}
+  id="task-modal"
+  show
+  on_cancel={JS.patch(~p"/")}
+>
+  <.live_component
+    module={TodoExWeb.TaskLive.FormComponent}
+    id={@project.id || :new}
+    users={@users}
+    title={@page_title}
+    action={@live_action}
+    project={@project}
+    patch={~p"/"}
+  />
+</.modal>
