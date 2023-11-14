@@ -7,7 +7,7 @@
   </:actions>
 </.header>
 <hr class="my-8" />
-<div id="projects-grid" class="grid grid-cols-2 gap-8" phx-update="stream">
+<div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8" phx-update="stream">
   <Atoms.card :for={{id, project} <- @streams.projects} id={id}>
     <div class="flex items-center gap-4">
       <Atoms.avatar initials={project.user.name} />
