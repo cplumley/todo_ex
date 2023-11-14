@@ -57,11 +57,6 @@ defmodule TodoExWeb.TaskLive.Index do
     {:noreply, stream_insert(socket, :projects, project)}
   end
 
-  def handle_info({TodoExWeb.TaskLive.TaskFormComponent, {:saved, task}}, socket) do
-    send_update(TodoExWeb.TaskLive.TaskComponent, id: task.project_id, task: task)
-    {:noreply, socket}
-  end
-
   def handle_info(%{task: task}, socket) do
     send_update(TodoExWeb.TaskLive.TaskComponent, id: task.project_id, task: task)
     {:noreply, socket}

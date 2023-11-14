@@ -58,9 +58,7 @@ defmodule TodoExWeb.TaskLive.TaskFormComponent do
 
   defp save_task(socket, :edit_task, task_params) do
     case TaskManager.update_task(socket.assigns.task, task_params) do
-      {:ok, task} ->
-        notify_parent({:saved, task})
-
+      {:ok, _task} ->
         {:noreply,
          socket
          |> put_flash(:info, "Task updated successfully")
@@ -73,9 +71,7 @@ defmodule TodoExWeb.TaskLive.TaskFormComponent do
 
   defp save_task(socket, :new_task, task_params) do
     case TaskManager.create_task(task_params) do
-      {:ok, task} ->
-        notify_parent({:saved, task})
-
+      {:ok, _task} ->
         {:noreply,
          socket
          |> put_flash(:info, "Task created successfully")
@@ -89,6 +85,4 @@ defmodule TodoExWeb.TaskLive.TaskFormComponent do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

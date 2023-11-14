@@ -155,6 +155,14 @@ defmodule TodoEx.TaskManager do
     %Task{}
     |> Task.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, task} ->
+        broadcast(TodoEx.PubSub, "tasks", %{task: task})
+        {:ok, task}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
